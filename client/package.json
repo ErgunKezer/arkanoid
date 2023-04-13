@@ -1,0 +1,13 @@
+{
+  "name": "client",
+  "version": "1.0.0",
+  "main": "scripts/index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "snowpack": "3.3.7",
+    "socket.io-client": "^4.6.1"
+  },
+  "scripts": {
+    "client": "snowpack dev"
+  }
+}

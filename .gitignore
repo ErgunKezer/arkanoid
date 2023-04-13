@@ -1,3 +1,6 @@
 node_modules/*
-
-*-lock.json
+*/node_modules/*
+*lock.json
+*/*lock.json
+*.lock
+*/*.lock

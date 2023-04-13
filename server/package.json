@@ -5,14 +5,15 @@
   "type": "module",
   "main": "src/index.js",
   "scripts": {
-    "dev": "live-server"
+    "server": "nodemon server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "live-server": "^1.2.2"
+    "nodemon": "^2.0.22"
   },
   "dependencies": {
+    "socket.io": "^4.6.1"
   }
 }
