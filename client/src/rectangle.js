@@ -1,4 +1,5 @@
 import { canvasHeight } from './model.js';
+import { globals } from './model.js';
 
 export function clearRectangle(user) {
 	user.ctx.clearRect(user.clearStartPoint, 0, user.clearWidth, canvasHeight);
@@ -25,8 +26,16 @@ export function moveVertical(user, rect, isUp) {
 	}
 }
 
-export function reDrawVertical(user, rect, isUp) {
+export function reDrawVertical(user, rect, isUp, triggerSocket) {
 	clearRectangle(user);
 	moveVertical(user, rect, isUp);
+	drawRectangle(user, rect);
+	if (triggerSocket) {
+		globals.socket.emit('playerMove', user);
+	}
+}
+
+export function reDrawWithoutCalculationVertical(user, rect) {
+	clearRectangle(user);
 	drawRectangle(user, rect);
 }

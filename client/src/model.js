@@ -1,16 +1,28 @@
+import { getSocket } from './services/socket.js';
+
+const canvas = document.getElementById('arkanoid');
 const canvasWidth = 700;
 const canvasHeight = 500;
-const canvas = document.getElementById('arkanoid');
 canvas.width = canvasWidth;
 canvas.height = canvasHeight;
+
 const rectangle = {
-	width: 30,
+	width: 20,
 	height: 100,
 };
 const defaultSpeed = 5;
 
+const socket = getSocket();
+
 const globals = {
+	allIds: [],
+	isFirst: false,
 	userId: '',
+	userIndex: 0,
+	rivalIndex: 1,
+	isReady: false,
+	isStopped: false,
+	socket,
 	speed: defaultSpeed,
 	rectangle,
 	ballEdges: {

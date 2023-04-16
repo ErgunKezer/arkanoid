@@ -4,7 +4,7 @@
 		<meta charset="UTF-8" />
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Document</title>
+		<title>Arkanoid</title>
 		<style>
 			/* TODO: move to css file */
 			canvas {
@@ -13,10 +13,43 @@
 				border: 1px solid red;
 				position: relative;
 			}
+			body,
+			.game {
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				align-items: center;
+			}
+
+			.game > * {
+				margin-bottom: 12px;
+			}
+
+			button {
+				padding: 16px 12px;
+				border-radius: 50%;
+				cursor: pointer;
+				border: none;
+				color: white;
+			}
+
+			.display_none {
+				display: none;
+			}
+			.ready {
+				background-color: #08a068;
+			}
+			.stop {
+				background-color: #9c2323;
+			}
 		</style>
-		<script type="module" src="./src/index.js"></script>
+		<script type="module" src="./src/client.js"></script>
 	</head>
 	<body>
-		<canvas id="arkanoid"></canvas>
+		<div id="game" class="game">
+			<canvas id="arkanoid"></canvas>
+			<button id="gameBtn" class="ready">Ready</button>
+		</div>
+		<p id="description" class="description">Please start the game</p>
 	</body>
 </html>

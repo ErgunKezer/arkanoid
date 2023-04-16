@@ -25,11 +25,22 @@ export function generateUser(canvas, globals, isFirstUser) {
 	};
 }
 
-const users = [
+function generateUserBuUpdate(canvas, user) {
+	return {
+		...user,
+		ctx: canvas.getContext('2d'),
+	};
+}
+const defUsers = [
 	generateUser(canvas, globals, true),
 	generateUser(canvas, globals, false),
 ];
 
 export function getUsers() {
-	return users;
+	return defUsers;
+}
+
+export function updateUser(index, user, users = defUsers) {
+	users[index] = generateUserBuUpdate(canvas, user);
+	return users[index];
 }
