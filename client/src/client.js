@@ -1,18 +1,44 @@
 import {
 	reDrawVertical,
 	reDrawWithoutCalculationVertical,
-} from './rectangle.js';
-import { globals } from './model.js';
-import { getUsers, updateUser } from './user.js';
-import { init } from './init.js';
-import { resetWholeGame } from './reset.js';
+} from './services/player.js';
+import { store } from './redux/store.js';
+import { getUsers, updateUser } from './services/user.js';
+import { init } from './services/init.js';
+import { resetWholeGame } from './services/reset.js';
 import { getGame } from './services/game.js';
+import { setCircleDirection } from './services/ball.js';
 
 const users = getUsers();
 const game = getGame();
 
-const descriptionElement = document.getElementById('description');
 const capitalize = (s) => s && s[0].toUpperCase() + s.slice(1);
+
+const descriptionElement = document.getElementById('description');
+const gameButtonElement = document.getElementById('gameBtn');
+
+const startGame = (direction) => {
+	let countdown = 3;
+	const countdownTimer = setInterval(() => {
+		if (countdown === 0) {
+			gameButtonElement.classList.replace('ready', 'stop');
+			gameButtonElement.innerText = 'Stop';
+			gameButtonElement.style.visibility = 'visible';
+
+			descriptionElement.classList.add('display_none');
+			descriptionElement.innerHTML = `Waiting for other player. You are ${capitalize(
+				store.userId
+			)}`;
+
+			clearInterval(countdownTimer);
+			setCircleDirection(direction);
+			game.start();
+			return;
+		}
+		descriptionElement.innerText = `Game will start in ${countdown}s`;
+		countdown--;
+	}, 1000);
+};
 
 function bootstrap() {
 	socket.emit('getId', (id, isFirst, isGameFull) => {
@@ -21,84 +47,70 @@ function bootstrap() {
 			document.getElementById('game').classList.add('display_none');
 			return;
 		}
-		init(globals);
-		// game.start();
-		console.log('id: ', id);
+		init(store);
 		const userIndex = isFirst ? 0 : 1;
 		const rivalIndex = !isFirst ? 0 : 1;
-		globals.userId = id;
-		globals.isFirst = isFirst;
-		globals.userIndex = userIndex;
-		globals.rivalIndex = rivalIndex;
+		store.userId = id;
+		store.isFirst = isFirst;
+		store.userIndex = userIndex;
+		store.rivalIndex = rivalIndex;
 	});
-
-	// setTimeout(game.stop, 3000);
 
 	socket.on('playerMove', (user) => {
-		const updatedUser = updateUser(globals.rivalIndex, user);
-		reDrawWithoutCalculationVertical(updatedUser, globals.rectangle);
+		const updatedUser = updateUser(store.rivalIndex, user);
+		reDrawWithoutCalculationVertical(updatedUser, store.rectangle);
 	});
 
-	socket.on('startGame', () => {
-		let countdown = 3;
-		const countdownTimer = setInterval(() => {
-			if (countdown === 0) {
-				descriptionElement.classList.add('display_none');
-				game.start();
-				clearInterval(countdownTimer);
-				return;
-			}
-			descriptionElement.innerText = `Game will start in ${countdown}s`;
-			countdown--;
-		}, 1000);
+	socket.on('startGame', (direction) => {
+		startGame(direction);
 	});
 
-	socket.on('resetWholeGame', (direction) => {
-		resetWholeGame(globals, false, direction);
+	socket.on('stopGame', (id) => {
+		if (store.userId === id) {
+			gameButtonElement.classList.replace('stop', 'ready');
+			gameButtonElement.innerText = 'Continue';
+			descriptionElement.innerHTML =
+				'Game paused, please click ready for continue the game';
+		} else {
+			gameButtonElement.style.visibility = 'hidden';
+			descriptionElement.innerHTML = 'Game paused by other player please wait';
+		}
+		descriptionElement.classList.remove('display_none');
+		game.stop();
+	});
+
+	socket.on('resetWholeGame', () => {
+		game.stop();
+		resetWholeGame(false);
 	});
 
 	document.addEventListener('keydown', (event) => {
 		if (event.keyCode === 87) {
-			return reDrawVertical(
-				users[globals.userIndex],
-				globals.rectangle,
-				true,
-				true
-			);
+			return reDrawVertical(users[store.userIndex], true, true);
 		}
 
 		if (event.keyCode === 83) {
-			return reDrawVertical(
-				users[globals.userIndex],
-				globals.rectangle,
-				false,
-				true
-			);
+			return reDrawVertical(users[store.userIndex], false, true);
 		}
 	});
 
-	const gameBtn = document.getElementById('gameBtn');
-	gameBtn.addEventListener('click', () => {
-		console.log(12);
-		const { isReady, userId } = globals;
-		globals.isReady = !isReady;
-		if (globals.isReady) {
-			gameBtn.classList.replace('ready', 'stop');
-			gameBtn.innerText = 'Stop';
+	gameButtonElement.addEventListener('click', () => {
+		const { isReady, userId } = store;
+		store.isReady = !isReady;
+		if (store.isReady) {
+			gameButtonElement.classList.replace('ready', 'stop');
+			gameButtonElement.innerText = 'Stop';
 			descriptionElement.innerHTML = `Waiting for other player. You are ${capitalize(
 				userId
 			)}`;
 			socket.emit('startGame', userId);
 		} else {
-			gameBtn.classList.replace('stop', 'ready');
-			gameBtn.innerText = 'Ready';
-			descriptionElement.innerHTML = 'Please click ready to start';
 			socket.emit('stopGame', userId);
 		}
 	});
 }
 
-const socket = globals.socket;
+const socket = store.socket;
 
 socket.on('connect', () => {
 	console.log('connected with ', socket.id);

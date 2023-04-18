@@ -1,18 +1,24 @@
 import { resetWholeGame } from './reset.js';
 import { getUsers } from './user.js';
-import { globals } from './model.js';
+import { store } from '../redux/store.js';
+import { configurations } from '../configurations/configurations.js';
 
 function isInRectRange(user, circle, rectangle) {
 	return circle.y >= user.y && circle.y <= user.y + rectangle.height;
 }
 
-function clearBallArea(ctx, edges) {
+export function clearBallArea(ctx, edges) {
 	ctx.clearRect(
 		edges.x.start,
 		edges.y.start,
 		edges.x.clearWidth,
 		edges.y.clearHeight
 	);
+}
+
+export function setCircleDirection(direction) {
+	let { speed, circle, isFirst } = store;
+	circle.direction = direction;
 }
 
 export function paint(ctx, circle) {
@@ -23,11 +29,14 @@ export function paint(ctx, circle) {
 }
 
 export function drawCircle() {
-	let { speed, circle, ballEdges: edges, rectangle, isFirst } = globals;
+	let { speed, circle, isFirst } = store;
 	const { ctx } = circle;
+	const { ballEdges: edges, rectangle } = configurations;
+
 	clearBallArea(ctx, edges);
+
 	const users = getUsers();
-	const user = users[globals.userIndex];
+	const user = users[store.userIndex];
 
 	// horizontal calculation
 	if (circle.x - circle.radius === edges.x.start) {
@@ -36,7 +45,7 @@ export function drawCircle() {
 			circle.direction.x = 1;
 			speed++;
 		} else {
-			return resetWholeGame(globals, true);
+			return resetWholeGame(true);
 		}
 	} else if (circle.x + circle.radius === edges.x.end) {
 		if ((isInRectRange(user, circle, rectangle) && !isFirst) || isFirst) {
@@ -44,7 +53,7 @@ export function drawCircle() {
 			circle.direction.x = 0;
 			speed++;
 		} else {
-			return resetWholeGame(globals, true);
+			return resetWholeGame(true);
 		}
 	} else {
 		circle.x = circle.direction.x ? circle.x + speed : circle.x - speed;
@@ -77,6 +86,6 @@ export function drawCircle() {
 			circle.direction.y = 1;
 		}
 	}
-	globals.speed = speed;
+	store.speed = speed;
 	paint(ctx, circle);
 }

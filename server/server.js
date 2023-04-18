@@ -1,26 +1,18 @@
 import { Server } from 'socket.io';
-import { numberGenerator } from './src/helpers/numberGenerator.js';
-const port = 3001;
+import { generateBallDirection } from './src/helpers/generateBallDirection.js';
+import { resetGame } from './src/services/resetGame.js';
+import {
+	idRelations,
+	idsTaken,
+	readyStatus,
+	ids,
+} from './src/memory/memory.js';
+
 const io = new Server({
 	cors: ['http://localhost:8080/'],
 });
 
-const ids = ['red', 'blue'];
-const idRelations = [
-	{
-		id: 'red',
-		isFirst: true,
-	},
-	{
-		id: 'blue',
-		isFirst: false,
-	},
-];
-const idsTaken = [];
-const readyStatus = {
-	red: false,
-	blue: false,
-};
+const port = 3001;
 
 io.on('connection', (socket) => {
 	socket.on('getId', (cb) => {
@@ -44,18 +36,14 @@ io.on('connection', (socket) => {
 	});
 
 	socket.on('resetWholeGame', () => {
-		const ballDirection = {
-			x: numberGenerator(0, 1),
-			y: numberGenerator(0, 1),
-		};
-		io.sockets.emit('resetWholeGame', ballDirection);
+		resetGame(io);
 	});
 
 	socket.on('disconnect', () => {
 		const ind = idsTaken.findIndex((idt) => idt.socketId === socket.id);
 		if (ind >= 0) {
-			readyStatus[idsTaken[ind].id] = false;
 			idsTaken.splice(ind, 1);
+			resetGame(io);
 		}
 	});
 
@@ -66,7 +54,7 @@ io.on('connection', (socket) => {
 		readyStatus[id] = true;
 		const isReady = Object.values(readyStatus).every((status) => status);
 		if (isReady) {
-			io.sockets.emit('startGame');
+			io.sockets.emit('startGame', generateBallDirection());
 		}
 	});
 

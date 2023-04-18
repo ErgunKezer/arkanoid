@@ -1,4 +1,4 @@
-import { drawCircle } from '../circle';
+import { drawCircle } from './ball';
 
 const gameMiddleware = () => {
 	let _instance;

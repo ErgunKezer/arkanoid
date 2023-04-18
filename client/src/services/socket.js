@@ -1,8 +1,9 @@
 import { io } from 'socket.io-client';
-import { SOCKET_URL } from '../constants/index.js';
+import { configurations } from '../configurations/configurations.js';
 
 const socketSrv = () => {
 	let _instance;
+	const { SOCKET_URL } = configurations;
 
 	const setInstance = () => {
 		_instance = io(SOCKET_URL);

@@ -1,7 +1,8 @@
-import { canvas, globals } from './model.js';
-
-export function generateUser(canvas, globals, isFirstUser) {
-	const { rectangle } = globals;
+import { store } from '../redux/store.js';
+import { configurations } from '../configurations/configurations.js';
+export function generateUser(isFirstUser) {
+	const { canvas } = store;
+	const { rectangle } = configurations;
 	const confs = isFirstUser
 		? {
 				ctx: canvas.getContext('2d'),
@@ -25,22 +26,21 @@ export function generateUser(canvas, globals, isFirstUser) {
 	};
 }
 
-function generateUserBuUpdate(canvas, user) {
-	return {
-		...user,
-		ctx: canvas.getContext('2d'),
-	};
-}
-const defUsers = [
-	generateUser(canvas, globals, true),
-	generateUser(canvas, globals, false),
-];
+const defUsers = [generateUser(true), generateUser(false)];
 
 export function getUsers() {
 	return defUsers;
 }
 
 export function updateUser(index, user, users = defUsers) {
-	users[index] = generateUserBuUpdate(canvas, user);
+	const { canvas } = store;
+	users[index] = generateUserByUpdate(canvas, user);
 	return users[index];
+}
+
+function generateUserByUpdate(canvas, user) {
+	return {
+		...user,
+		ctx: canvas.getContext('2d'),
+	};
 }
